@@ -14,8 +14,14 @@ read_inputs.py —— 读投后评价项目的输入资料，产出结构化 dat
       "project_name": null,         # 待 AI 从材料里提取后回填
       "excels": { "文件名.xlsx": { "Sheet1": {"header": [...], "rows": [[...], ...]} } },
       "texts":  { "某材料.pdf": "抽出的正文..." },
+      "images": [ {"path": "图.png 绝对路径", "name": "图.png"} ],  # 扫到的独立图片(png/jpg/jpeg)登记于此
       "raw_files": [ "扫到的所有文件路径" ]
     }
+
+    关于 images 字段：脚本不做 OCR/图像识别（headless 调不了多模态，硬 OCR 图表会出垃圾），
+    只把扫到的独立图片文件登记进结构化层，避免它们像旧版那样被静默丢弃。AI 填充阶段读 data.json
+    时能看到有哪些图，自行决定是当插图挂进报告（配 build_report.py 的 InlineImage + 模板占位符），
+    还是读图把图上数据转成文字填进正文/表格。docx 内嵌图、扫描件 PDF 不走这里（各有分支）。
 
 注意：本脚本只负责"把资料读出来放进 json 的原始字段"，不做业务判断。
       项目名、金额归位、report_type 这些"理解层"的活由 AI 读着 json 去填对应字段，
@@ -139,6 +145,7 @@ def build_data(inputs):
         "project_name": None,  # 待 AI 从材料提取回填
         "excels": {},
         "texts": {},
+        "images": [],
         "raw_files": [],
     }
     for path in collect_files(inputs):
@@ -160,6 +167,9 @@ def build_data(inputs):
                     data["texts"][name] = txt
             elif ext in (".txt", ".md"):
                 data["texts"][name] = read_text_file(path)
+            elif ext in (".png", ".jpg", ".jpeg"):
+                # 独立图片：不做 OCR，只登记进结构化层，交给 AI 填充阶段决定当插图还是转文字。
+                data["images"].append({"path": os.path.abspath(path), "name": name})
             else:
                 print(f"[skip] 未处理类型：{name}", file=sys.stderr)
         except Exception as e:
@@ -182,9 +192,14 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+    if data["images"]:
+        print(f"[image] 登记图片 {len(data['images'])} 张，图表数据需 AI 填充层读图提取或直接作插图",
+              file=sys.stderr)
+
     print(f"[done] 已写出 {out}")
     print(f"       Excel 表：{len(data['excels'])} 个文件")
     print(f"       文字材料：{len(data['texts'])} 个文件")
+    print(f"       登记图片：{len(data['images'])} 张")
     print(f"       原始文件：{len(data['raw_files'])} 个")
     print("       下一步：AI 读 data.json，判断 report_type、提取 project_name 和各字段。")
 

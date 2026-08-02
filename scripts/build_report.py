@@ -78,14 +78,24 @@ def build(context_json, out_docx, force_type=None):
 
     # ---- 处理图片：context["images"] 里每项 {"var":"投资控制图","path":"...","width_mm":150} ----
     # 模板里用 {{ 投资控制图 }} 引用。图片要包成 InlineImage 才能插入。
+    # 先取模板声明的变量集，用来检测哪些图的占位符模板里根本没有（否则会被静默丢弃）。
+    try:
+        declared_vars = doc.get_undeclared_template_variables()
+    except Exception:
+        declared_vars = None  # 拿不到就退化为不检测，不影响渲染
     images = context.pop("images", []) or []
     for img in images:
         path = img["path"]
+        var = img["var"]
         if not os.path.isfile(path):
             print(f"[warn] 图片不存在，跳过：{path}", file=sys.stderr)
             continue
+        if declared_vars is not None and var not in declared_vars:
+            print(f"[warn] 图片 {os.path.basename(path)} 的占位符 {{{{ {var} }}}} 不在模板里，未插入",
+                  file=sys.stderr)
+            continue
         width = Mm(img.get("width_mm", 150))
-        context[img["var"]] = InlineImage(doc, path, width=width)
+        context[var] = InlineImage(doc, path, width=width)
 
     # ---- 渲染 ----
     # context 里应包含：所有确定项字段、逐字固定话术、表格循环用的列表、
