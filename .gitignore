@@ -1,0 +1,35 @@
+# === 内部 / 敏感资料（严禁误提交）===
+# 真实项目证据材料、交接稿等一律不入仓
+证据材料/
+**/证据材料/
+交接.md
+**/交接*.md
+# 注意：examples/ 下是脱敏后的虚构可跑示例，须入仓（供 clone 后直接跑通）；
+# 若日后新增真实项目专属示例，单独放 examples/_private/ 并在此忽略
+examples/_private/
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# === 渲染产物 / 临时备份 ===
+# 注意：不挡 templates/*.docx 模板本身
+*.docx.bak
+*.docx.bak[0-9]
+# 根目录临时 data.json 忽略，但放行 examples/ 里的示例 data.json
+/data.json
+!examples/**/data.json
+/output/
+*.tmp
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === 编辑器 ===
+.vscode/
+.idea/
