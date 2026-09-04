@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投后评价报告生产工具 使用手册</title>
+<style>
+  :root{
+    --ink:#1f2a2e;          /* 正文墨色 */
+    --deep:#0f3d33;         /* 主色 深墨绿 */
+    --deep2:#155a4a;        /* 次绿 */
+    --accent:#c9a34e;       /* 点缀 暗金 */
+    --line:#d8ddda;         /* 分隔线 */
+    --soft:#f2f5f3;         /* 浅底 */
+    --soft2:#e7efeb;        /* 稍深浅底 */
+    --muted:#5c6a66;        /* 次要文字 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  @page{ size:A4; margin:0; }
+  html,body{
+    font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+    color:var(--ink);
+    font-size:10.4pt;
+    line-height:1.68;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sans{ font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; }
+
+  /* A4 页 */
+  .page{
+    position:relative;
+    width:210mm;
+    height:297mm;
+    padding:20mm 18mm 16mm 18mm;
+    background:#fff;
+    overflow:hidden;
+    page-break-after:always;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  /* 页眉页脚 */
+  .runhead{
+    position:absolute; top:9mm; left:18mm; right:18mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:7.6pt; color:var(--muted);
+    letter-spacing:.02em;
+    padding-bottom:2.5mm;
+    border-bottom:.5pt solid var(--line);
+  }
+  .runhead .rh-r{ color:var(--deep2); }
+  .runfoot{
+    position:absolute; bottom:9mm; left:18mm; right:18mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:7.6pt; color:var(--muted);
+    padding-top:2.5mm;
+    border-top:.5pt solid var(--line);
+  }
+
+  /* 章标题 */
+  .chapter{ margin-bottom:6mm; }
+  .chapter .no{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:8pt; font-weight:700; letter-spacing:.28em;
+    color:var(--accent); text-transform:uppercase;
+  }
+  .chapter h2{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:17pt; font-weight:700; color:var(--deep);
+    line-height:1.3; margin-top:1mm;
+    padding-bottom:3mm; position:relative;
+  }
+  .chapter h2::after{
+    content:""; position:absolute; left:0; bottom:0;
+    width:16mm; height:1.3mm; background:var(--accent);
+  }
+  h3{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:11.5pt; font-weight:700; color:var(--deep2);
+    margin:5mm 0 2.5mm 0;
+  }
+  p{ margin-bottom:2.6mm; text-align:justify; }
+  strong{ color:var(--deep); font-weight:700; }
+  .lead{ font-size:11pt; color:var(--ink); }
+
+  /* 通用块 */
+  .callout{
+    background:var(--soft); border-left:2.6mm solid var(--deep2);
+    padding:3.5mm 4.5mm; border-radius:0 2mm 2mm 0;
+    margin:4mm 0;
+  }
+  .callout .k{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-weight:700;
+    color:var(--deep); font-size:10pt; display:block; margin-bottom:1mm;
+  }
+  .note{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:9.4pt; color:var(--muted);
+  }
+
+  /* 表格 */
+  table{ width:100%; border-collapse:collapse; margin:3mm 0 4mm 0; font-size:9.4pt; }
+  th,td{ border:.5pt solid var(--line); padding:2.4mm 3mm; vertical-align:top; text-align:left; }
+  thead th{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    background:var(--deep); color:#fff; font-weight:700; font-size:9.6pt;
+    border-color:var(--deep);
+  }
+  tbody th{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    background:var(--soft2); color:var(--deep); width:26mm; font-weight:700;
+  }
+  tbody tr:nth-child(even) td{ background:#fafbfa; }
+  .col2 thead th:first-child{ width:24mm; }
+
+  /* 列表 */
+  ul.clean{ list-style:none; }
+  ul.clean li{
+    position:relative; padding-left:6mm; margin-bottom:2.4mm; text-align:justify;
+  }
+  ul.clean li::before{
+    content:""; position:absolute; left:0; top:2.4mm;
+    width:2.2mm; height:2.2mm; background:var(--accent); border-radius:.4mm;
+  }
+  ol.num{ list-style:none; counter-reset:n; }
+  ol.num > li{
+    position:relative; padding-left:8mm; margin-bottom:3mm; text-align:justify;
+  }
+  ol.num > li::before{
+    counter-increment:n; content:counter(n);
+    position:absolute; left:0; top:.2mm;
+    width:5.6mm; height:5.6mm; line-height:5.6mm; text-align:center;
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:8.6pt; font-weight:700;
+    color:#fff; background:var(--deep2); border-radius:50%;
+  }
+
+  /* 原则卡片 */
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
+  .card{
+    border:.6pt solid var(--line); border-top:2mm solid var(--deep2);
+    border-radius:1.5mm; padding:4mm 4.5mm; background:#fff;
+  }
+  .card .cnum{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:8pt; font-weight:700;
+    letter-spacing:.2em; color:var(--accent);
+  }
+  .card .ctitle{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:11pt; font-weight:700;
+    color:var(--deep); margin:.5mm 0 1.5mm 0;
+  }
+  .card p{ font-size:9.4pt; color:var(--ink); margin:0; }
+
+  /* 流程图 */
+  .flow{ margin:4mm 0; }
+  .fstep{
+    display:flex; align-items:stretch; gap:4mm; margin-bottom:2mm;
+  }
+  .fbadge{
+    flex:0 0 12mm; display:flex; align-items:center; justify-content:center;
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:14pt; font-weight:700; color:#fff;
+    background:var(--deep); border-radius:2mm;
+  }
+  .fbody{
+    flex:1; border:.6pt solid var(--line); border-left:none;
+    border-radius:0 2mm 2mm 0; padding:3mm 4mm; background:var(--soft);
+  }
+  .fbody .ft{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-weight:700; color:var(--deep);
+    font-size:10.5pt; margin-bottom:.6mm;
+  }
+  .fbody .fd{ font-size:9.3pt; color:var(--ink); }
+  .fbody .fd code{
+    font-family:"SF Mono","Menlo",monospace; font-size:8.4pt;
+    background:#fff; border:.5pt solid var(--line); border-radius:1mm;
+    padding:.2mm 1.2mm; color:var(--deep2);
+  }
+  .farrow{ text-align:center; color:var(--accent); font-size:11pt; line-height:1; margin:.4mm 0 1.6mm 6mm; }
+  .fstep.opt .fbadge{ background:var(--deep2); opacity:.85; }
+  .fstep.opt .fbody{ border-style:dashed; }
+
+  /* 封面 */
+  .cover{
+    padding:0; background:
+      linear-gradient(150deg,#0c352c 0%, #10463a 46%, #123f34 100%);
+    color:#fff; display:flex; flex-direction:column;
+  }
+  .cover .cov-top{ flex:0 0 auto; padding:26mm 22mm 0 22mm; }
+  .cover .cov-kicker{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:9pt; font-weight:600;
+    letter-spacing:.42em; color:var(--accent); text-transform:uppercase;
+  }
+  .cover .cov-rule{ width:22mm; height:1.4mm; background:var(--accent); margin:6mm 0; }
+  .cover .cov-mid{ flex:1 1 auto; padding:0 22mm; display:flex; flex-direction:column; justify-content:center; }
+  .cover h1{
+    font-family:"Songti SC","STSong",serif; font-weight:700;
+    font-size:36pt; line-height:1.28; letter-spacing:.02em;
+  }
+  .cover h1 .en{
+    display:block; font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-weight:400;
+    font-size:11pt; letter-spacing:.24em; color:rgba(255,255,255,.62);
+    margin-top:5mm; text-transform:uppercase;
+  }
+  .cover .cov-sub{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:13pt; color:rgba(255,255,255,.9);
+    margin-top:10mm; line-height:1.6; font-weight:400;
+  }
+  .cover .cov-sub .dot{ color:var(--accent); margin:0 2mm; }
+  .cover .cov-bot{
+    flex:0 0 auto; padding:0 22mm 24mm 22mm;
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-top:.5pt solid rgba(255,255,255,.22); margin:0 22mm; padding-top:6mm;
+  }
+  .cover .cov-bot .meta{ font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:9pt; color:rgba(255,255,255,.72); line-height:1.9; }
+  .cover .cov-bot .ver{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-size:12pt; font-weight:700;
+    color:#fff; letter-spacing:.1em;
+  }
+  .cover .cov-bot .ver span{ color:var(--accent); }
+  .cover-fix{ margin:0; padding-top:6mm; }
+
+  /* 装饰细节 */
+  .kquote{
+    font-family:"Songti SC",serif; font-size:10.6pt; color:var(--deep2);
+    background:var(--soft2); border-radius:2mm; padding:3.2mm 4.5mm; margin:3mm 0;
+  }
+  .kquote b{ color:var(--deep); }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+  .mini{
+    border:.6pt solid var(--line); border-radius:1.5mm; padding:3.5mm 4mm; background:#fff;
+  }
+  .mini .mt{ font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; font-weight:700; color:var(--deep); font-size:10.5pt; margin-bottom:1mm; }
+  .mini .ms{ font-size:9.3pt; color:var(--muted); font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif; }
+  .mini ul.clean li{ font-size:9.3pt; margin-bottom:1.6mm; }
+
+  /* 免责声明 */
+  .disclaimer{
+    margin-top:7mm; padding:5mm 6mm;
+    background:#f7f8f8; border:.5pt solid var(--line); border-radius:2mm;
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    color:#6a746f;
+  }
+  .disclaimer .dhead{
+    display:flex; align-items:center; gap:3mm; margin-bottom:2.5mm;
+  }
+  .disclaimer .dhead .dline{ flex:1; height:.5pt; background:var(--line); }
+  .disclaimer .dhead .dt{
+    font-size:9pt; font-weight:700; letter-spacing:.24em; color:#7c857f;
+  }
+  .disclaimer ol{ list-style:none; counter-reset:d; margin:0; padding:0; }
+  .disclaimer ol li{
+    position:relative; padding-left:5.5mm; margin-bottom:1.6mm;
+    font-size:8.4pt; line-height:1.62; text-align:justify;
+  }
+  .disclaimer ol li::before{
+    counter-increment:d; content:counter(d)".";
+    position:absolute; left:0; top:0; color:#a2aaa4; font-weight:600;
+  }
+  .disclaimer .sign{
+    margin-top:3mm; padding-top:2.5mm; border-top:.5pt solid var(--line);
+    font-size:8.4pt; color:#7c857f; display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .disclaimer .sign b{ color:#5c6a66; font-weight:700; }
+
+  /* 开源地址标签 */
+  .repo{
+    display:inline-flex; align-items:center; gap:2.5mm;
+    margin-top:4mm; padding:2.6mm 4mm;
+    background:var(--soft2); border:.6pt solid var(--line); border-radius:2mm;
+  }
+  .repo .rk{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:8.6pt; font-weight:700; color:var(--deep);
+    padding-right:2.5mm; border-right:.6pt solid var(--line);
+  }
+  .repo .ru{
+    font-family:"SF Mono","Menlo",monospace; font-size:8.8pt; color:var(--deep2);
+    letter-spacing:.01em;
+  }
+  /* 封面上的开源地址（深底浅字版） */
+  .cov-repo{
+    display:inline-flex; align-items:center; gap:2.5mm; margin-top:6mm;
+    padding:2.2mm 4mm; border:.6pt solid rgba(255,255,255,.28); border-radius:2mm;
+  }
+  .cov-repo .rk{
+    font-family:"Hiragino Sans GB","Heiti SC","PingFang SC",sans-serif;
+    font-size:8pt; font-weight:700; letter-spacing:.06em; color:var(--accent);
+    padding-right:2.5mm; border-right:.6pt solid rgba(255,255,255,.28);
+  }
+  .cov-repo .ru{
+    font-family:"SF Mono","Menlo",monospace; font-size:8.4pt; color:rgba(255,255,255,.86);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 封面 ============ -->
+<section class="page cover">
+  <div class="cov-top">
+    <div class="cov-kicker">Post-Investment Evaluation</div>
+    <div class="cov-rule"></div>
+  </div>
+  <div class="cov-mid">
+    <h1>投后评价报告<br>生产工具　使用手册
+      <span class="en">User Manual · Report Automation Toolkit</span>
+    </h1>
+    <div class="cov-sub">资产评估机构<span class="dot">·</span>投后评价报告自动化生产</div>
+    <div class="cov-repo">
+      <span class="rk">开源 · GitHub</span>
+      <span class="ru">github.com/Allenfang2026/post-eval-report-builder</span>
+    </div>
+  </div>
+  <div class="cov-bot cover-fix">
+    <div class="meta">
+      面向使用者的入门与操作指南<br>
+      从散乱项目资料到正式《投后评价报告》Word 文档<br>
+      <span style="color:rgba(255,255,255,.9);">编制：方艾伦</span><span style="color:rgba(255,255,255,.55);">（小红书、抖音同名）</span>
+    </div>
+    <div class="ver">版本　<span>v1.0</span></div>
+  </div>
+</section>
+
+<!-- ============ 第 1 章 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 01</div>
+    <h2>这个工具能做什么</h2>
+  </div>
+
+  <p class="lead">一句话：把一个投资项目的<strong>散乱资料</strong>——财务 Excel、文字材料、扫描件 PDF——变成一份排版规整、符合评估机构固定范式的正式《投后评价报告》Word 文档。</p>
+
+  <p>使用者（资产评估机构）平时要反复给不同项目出这类报告，而报告的<strong>骨架和话术是固定的、内容随项目变</strong>。这个工具把固定的部分沉淀下来，把变动的部分交给 AI 按资料填写，最终渲染成可直接编辑的 Word 交评估师定稿。</p>
+
+  <div class="callout">
+    <span class="k">它是怎么分工的</span>
+    工具沉淀<strong>固定部分</strong>（章节结构、免责话术、格式排版、打分表模板）；AI 负责读资料、<strong>填能确定的事实</strong>（项目名、金额、日期、主体、财务数据、政策文号）；<strong>需要专业判断的地方留空并附话术提示</strong>（风险定档、成功度打分、评价结论）；最后渲染成 <strong>.docx</strong>，由评估师补齐判断后定稿。
+  </div>
+
+  <div class="kquote">
+    换句话说，它替评估师干掉了<b>重复的排版和抄写</b>，把人的时间留给真正需要专业资质的<b>判断</b>。
+  </div>
+
+  <h3>它不替你做的事</h3>
+  <ul class="clean">
+    <li>不替评估师下专业判断——风险打几档、成功度打多少分、最终结论倾向，一律留空等你填。</li>
+    <li>不编造数据——资料里没有的金额和指标，它标「待补充」，绝不臆造。</li>
+    <li>不改动排版样式——字体、字号、行距、页眉页脚都在 Word 模板里做死，代码只灌数据。</li>
+  </ul>
+
+  <div class="callout" style="border-left-color:var(--accent);">
+    <span class="k">一句话记住定位</span>
+    它是一台<strong>把资料变成合规初稿的流水线</strong>，不是替你签字的评估师。初稿由它产出，判断和落款永远是人的。
+  </div>
+</section>
+
+<!-- ============ 第 2 章 两类报告 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 02</div>
+    <h2>两类报告怎么区分</h2>
+  </div>
+
+  <p class="lead">这是<strong>开工前最重要的一步</strong>。范式判错，后面用的规范、模板、话术全错。工具支持两种范式——<strong>股权类</strong>和<strong>工程类</strong>，先分清你手上这单是哪一类。</p>
+
+  <table class="col2">
+    <thead>
+      <tr><th>对比项</th><th>股权类</th><th>工程类</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>评什么</th>
+        <td>对一家企业的<strong>股权投资</strong>（长期股权投资、被投公司经营）</td>
+        <td>一个<strong>工程建设项目本身</strong>（市政 / 建筑 / 改造 / 环保整治）</td>
+      </tr>
+      <tr>
+        <th>典型例子</th>
+        <td>收购、入股某科技公司；参股某类金融租赁公司</td>
+        <td>学生公寓建设；污水处理厂提标改造；商务区收购运营</td>
+      </tr>
+      <tr>
+        <th>章节骨架</th>
+        <td><strong>四章制</strong>：项目基本情况 / 投资过程评价 / 投资效益评价 / 投后评价结论</td>
+        <td><strong>七章制</strong>：项目概况 / 后评价工作情况 / 实施全过程评价 / 效果效益 / 环境社会效益 / 目标与可持续 / 结论与经验教训</td>
+      </tr>
+      <tr>
+        <th>编号体系</th>
+        <td>中文层级「一、（一）1、（1）」</td>
+        <td>阿拉伯多级「1 / 1.1 / 1.1.1」</td>
+      </tr>
+      <tr>
+        <th>正文字体</th>
+        <td>宋体</td>
+        <td>仿宋</td>
+      </tr>
+      <tr>
+        <th>免责声明</th>
+        <td>独立成页，<strong>4 段法律免责逐字固定</strong></td>
+        <td><strong>没有独立声明章节</strong>，靠正文「据委托方提供的资料」等资料来源限定语替代</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="k">判断口诀</span>
+    评的是「对一家公司投了钱、看它<strong>经营</strong>得怎么样」= <strong>股权类</strong>；<br>
+    评的是「盖了 / 改了一个<strong>工程</strong>、看它建得怎么样、钱花得对不对」= <strong>工程类</strong>。
+  </div>
+
+  <div class="kquote">
+    拿不准时，翻资料里有没有 <b>招投标 / 施工合同 / 竣工验收 / 工程结算</b>——有这些，就是工程类。
+  </div>
+</section>
+
+<!-- ============ 第 3 章 产物层级 + 第4章 输入 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 03</div>
+    <h2>两种产物层级</h2>
+  </div>
+
+  <p class="lead">范式（股权 / 工程）之外，还要先判断你要做的是哪一<strong>层</strong>产物。这两个维度<strong>各自独立</strong>——先定层级，再在层级内部分股权还是工程。</p>
+
+  <table class="col2">
+    <thead>
+      <tr><th>对比项</th><th>完整版投后评价报告</th><th>后评价专项报告</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>是什么</th>
+        <td>几十页的<strong>正式报告</strong>，评估机构出具</td>
+        <td>10 页量级、<strong>报送上级</strong>的浓缩说明</td>
+      </tr>
+      <tr>
+        <th>输入什么</th>
+        <td>项目<strong>原始资料</strong>（财务 Excel / 文字材料 / 扫描件）</td>
+        <td>一份<strong>已做好的完整版报告</strong> + 客户给的《专项报告》模板</td>
+      </tr>
+      <tr>
+        <th>走哪套流程</th>
+        <td>下面第 5 章的<strong>五步主流程</strong></td>
+        <td>专项报告提炼流程（另见参考文档）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="k">怎么选</span>
+    客户给<strong>原始资料</strong>、要一份正式报告 → 走五步主流程；<br>
+    客户给<strong>已完成的完整版报告</strong>加一份《专项报告》模板、要「提炼成模板样子」 → 走专项报告提炼流程。
+  </div>
+
+  <div class="chapter" style="margin-top:9mm;">
+    <div class="no">Chapter 04</div>
+    <h2>需要准备哪些输入资料</h2>
+  </div>
+
+  <p>做<strong>完整版报告</strong>时，把项目的原始资料收齐丢给工具，主要有四类：</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="cnum">资料 A</div>
+      <div class="ctitle">Excel 财务数据</div>
+      <p>资产、利润、现金流等财务报表，工具按表读成结构化数据。</p>
+    </div>
+    <div class="card">
+      <div class="cnum">资料 B</div>
+      <div class="ctitle">文字材料 PDF</div>
+      <p>可复制文字的 PDF（可研、决议、说明等），直接抽取文字。</p>
+    </div>
+    <div class="card">
+      <div class="cnum">资料 C</div>
+      <div class="ctitle">扫描件 PDF</div>
+      <p>图片型、抽不出文字的 PDF，工具走 OCR 转成文字。</p>
+    </div>
+    <div class="card">
+      <div class="cnum">资料 D</div>
+      <div class="ctitle">独立图片</div>
+      <p>验收单 / 合同 / 许可证等单张图片，登记备用或读图取数。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第 5 章 五步流程 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 05</div>
+    <h2>五步工作流程</h2>
+  </div>
+
+  <p class="lead">拿到资料后，工具按下面五步把它变成 Word 初稿。理解每一步<strong>产出什么</strong>，你就知道自己在哪一步该介入。</p>
+
+  <div class="flow">
+    <div class="fstep">
+      <div class="fbadge">1</div>
+      <div class="fbody">
+        <div class="ft">识别范式</div>
+        <div class="fd">判断是<strong>股权类还是工程类</strong> → 决定用哪套规范、哪个模板、哪套话术。</div>
+      </div>
+    </div>
+    <div class="farrow">▼</div>
+    <div class="fstep">
+      <div class="fbadge">2</div>
+      <div class="fbody">
+        <div class="ft">读输入资料 → 结构化数据</div>
+        <div class="fd">把资料读成一份 <code>data.json</code>：项目名、金额、日期、主体、财务数据各归其位；扫描件走 OCR。</div>
+      </div>
+    </div>
+    <div class="farrow">▼</div>
+    <div class="fstep">
+      <div class="fbadge">3</div>
+      <div class="fbody">
+        <div class="ft">匹配模板 + 填「能填的确定项」</div>
+        <div class="fd">挑对应模板，只填<strong>事实确定项</strong>：项目名、各环节金额、日期、各方主体、财务数据、政策文号，以及逐字固定的话术。</div>
+      </div>
+    </div>
+    <div class="farrow">▼</div>
+    <div class="fstep">
+      <div class="fbadge">4</div>
+      <div class="fbody">
+        <div class="ft">需专业判断处 → 留空 + 附话术提示</div>
+        <div class="fd"><strong>风险定档、成功度打分、评价结论、数据缺失处</strong>一律留空，并附对应话术提示，<strong>绝不替评估师编</strong>。</div>
+      </div>
+    </div>
+    <div class="farrow">▼</div>
+    <div class="fstep">
+      <div class="fbadge">5</div>
+      <div class="fbody">
+        <div class="ft">渲染 → 输出 .docx</div>
+        <div class="fd">模板 + 数据 + 插图渲染成成品 Word。评估师补齐判断、<strong>按 F9 更新目录</strong>后定稿。</div>
+      </div>
+    </div>
+    <div class="farrow">▼</div>
+    <div class="fstep opt">
+      <div class="fbadge">6</div>
+      <div class="fbody">
+        <div class="ft">送审后收尾（可选）</div>
+        <div class="fd">客户返回带批注的稿 → 逐条处理批注 → 交付前自检，出干净定稿。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第 6 章 四原则 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 06</div>
+    <h2>四条核心原则（不可动摇）</h2>
+  </div>
+
+  <p class="lead">这四条是工具的底线，也是这类报告能被采信的前提。使用中如果发现工具「越界」替你做了判断、或凭空补了数据，那一定是哪里出了错——这四条永远优先。</p>
+
+  <div class="cards" style="grid-template-columns:1fr 1fr; gap:5mm; margin-top:5mm;">
+    <div class="card" style="border-top-color:var(--deep);">
+      <div class="cnum">原则 01</div>
+      <div class="ctitle">AI 只填确定项，判断留空</div>
+      <p>风险定档、成功度打分、评价结论一律留空并附提示，<strong>绝不替评估师编分数、编结论</strong>。判断是人的专业职责。</p>
+    </div>
+    <div class="card" style="border-top-color:var(--deep);">
+      <div class="cnum">原则 02</div>
+      <div class="ctitle">固定话术逐字不改</div>
+      <p>免责声明、固定原则句等属法律和规范措辞，<strong>原样搬、一字不动</strong>。（含项目事实的句子须先核实有据再用。）</p>
+    </div>
+    <div class="card" style="border-top-color:var(--deep);">
+      <div class="cnum">原则 03</div>
+      <div class="ctitle">数据缺就标缺</div>
+      <p>资料里没有的金额、指标、日期，标注<strong>「待补充」</strong>，绝不臆造数字来把报告填满。</p>
+    </div>
+    <div class="card" style="border-top-color:var(--deep);">
+      <div class="cnum">原则 04</div>
+      <div class="ctitle">排版 100% 照模板</div>
+      <p>字体、字号、行距、页眉页脚、封面全在 Word 模板里做死，<strong>代码只灌数据不碰样式</strong>，保真度等于那份真实报告。</p>
+    </div>
+  </div>
+
+  <div class="kquote" style="margin-top:6mm;">
+    一句话贯穿四条：<b>能确定的，工具替你填全填准；不能确定的，工具替你留好、提醒你——但绝不替你编。</b>
+  </div>
+</section>
+
+<!-- ============ 第 7 章 常见问题 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="chapter">
+    <div class="no">Chapter 07</div>
+    <h2>常见问题与关键提醒</h2>
+  </div>
+
+  <p class="lead">这些是实操中最容易踩的坑，出稿前对照过一遍，能省掉大部分返工。</p>
+
+  <ol class="num">
+    <li><strong>工程类没有独立免责声明。</strong>别把股权类那 4 段免责声明搬到工程类报告里——工程类靠正文「据委托方提供的资料 / 据委托方反馈 / 评价人员现场查勘」这类资料来源限定语承担免责功能。</li>
+
+    <li><strong>成功度打分表按项目性质选。</strong>新建市政 / 环保工程（如污水处理厂提标改造）→ 用工程细表 <strong>20 指标</strong>；收购、存量或股权投资 → 用 <strong>7～8 维度</strong>表；需多专家评审的复杂设备投资 → 用<strong>专家团加权 15 子指标</strong>。别一套表套所有项目。</li>
+
+    <li><strong>国资项目用官方五档。</strong>属地方国资体系的项目，成功度结论统一用官方五档：<strong>优（≥90）/ 良〔80,90）/ 中〔70,80）/ 低〔60,70）/ 差（&lt;60）</strong>，别换别的分档口径。</li>
+
+    <li><strong>环保整改类工程效益按「达到环保要求」定性写。</strong>污水处理厂提标改造、污水零直排、管网改造这类工程无直接财务收益、改造前后数据常缺失——<strong>不补数据、不编数字</strong>，效益章按「完成改造、满足环保排放要求、取得排水许可、验收合格」定性写，以许可证和验收文件作达标实证。</li>
+
+    <li><strong>目录不会自动更新。</strong>Word 里的目录是「域」，程序生成后页码是空的。评估师打开 Word 后需<strong>全选按 F9 更新域</strong>，交付前务必确认目录页码正确。</li>
+  </ol>
+
+  <div class="two-col" style="margin-top:5mm;">
+    <div class="mini">
+      <div class="mt">介入时机速查</div>
+      <div class="ms">你（评估师）主要在这几处出手：</div>
+      <ul class="clean">
+        <li>第 4 步所有留空占位处：补判断</li>
+        <li>成功度打分表：定分值与等级</li>
+        <li>评价结论：定最终倾向</li>
+        <li>目录：按 F9 更新页码</li>
+      </ul>
+    </div>
+    <div class="mini">
+      <div class="mt">交付前最后一眼</div>
+      <div class="ms">出稿前对照确认：</div>
+      <ul class="clean">
+        <li>占位符是否都已补齐</li>
+        <li>数字是否与原始资料一致</li>
+        <li>缺失项是否如实标「待补充」</li>
+        <li>目录页码是否正确</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color:var(--accent); margin-top:6mm;">
+    <span class="k">最后叮嘱</span>
+    工具产出的是<strong>初稿</strong>，不是终稿。所有专业判断、最终结论和签字，始终由评估师本人完成——这既是合规要求，也是这份报告价值的所在。
+  </div>
+</section>
+
+<!-- ============ 末页：免责声明 + 署名 ============ -->
+<section class="page">
+  <div class="runhead"><span>投后评价报告生产工具 · 使用手册</span><span class="rh-r">v1.0</span></div>
+  <div class="runfoot"><span>投后评价报告生产工具</span><span>v1.0　·　全文完</span></div>
+  <div class="chapter">
+    <div class="no">Appendix</div>
+    <h2>结语</h2>
+  </div>
+
+  <p class="lead">这套工具的价值，是把评估师从重复的排版与抄写里解放出来，把时间还给真正需要专业判断的地方。愿它能在你的日常出稿中，稳稳地替你省下一程。</p>
+
+  <p>本手册基于工具的实际工作流程整理而成，会随工具迭代持续更新。若你在使用中有疑问、建议或发现疏漏，欢迎通过下方账号交流指正。</p>
+
+  <p style="margin-bottom:1.5mm;"><strong>本工具已开源</strong>，欢迎前往 GitHub 获取工具本体、查看更新：</p>
+  <div class="repo">
+    <span class="rk">获取工具 · GitHub</span>
+    <span class="ru">github.com/Allenfang2026/post-eval-report-builder</span>
+  </div>
+
+  <div class="disclaimer" style="margin-top:6mm;">
+    <div class="dhead">
+      <span class="dt">免责声明</span>
+      <span class="dline"></span>
+    </div>
+    <ol>
+      <li>本手册仅用于方法分享与学习交流，介绍一套投后评价报告的生产工具与工作流程，不构成任何专业评估意见、投资建议或执业指导。</li>
+      <li>本工具生成的是报告初稿，仅作辅助之用，并不替代具有资质的资产评估师的专业判断；报告的合规性、数据真实性与最终定稿责任，均由持证评估师及出具机构承担。</li>
+      <li>文中涉及的章节范式、话术与格式，均为行业通用惯例的示意；具体项目仍须以实际适用的法律法规、评估准则及委托方要求为准。</li>
+      <li>任何人依据本手册内容进行的操作及由此产生的后果，须自行判断、自担风险，作者不承担相关责任。</li>
+      <li>手册内容如有疏漏之处，欢迎通过作者的小红书 / 抖音账号交流指正。</li>
+    </ol>
+    <div class="sign">
+      <span>编制：<b>方艾伦</b>　（小红书、抖音同名）</span>
+      <span>版本 v1.0</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -33,3 +33,6 @@ Thumbs.db
 # === 编辑器 ===
 .vscode/
 .idea/
+
+# === 依赖目录（2026-09-04 送修前补）===
+node_modules/
